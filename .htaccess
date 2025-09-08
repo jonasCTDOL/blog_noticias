@@ -1,4 +1,13 @@
 AddHandler fcgid-script .fcgi
 RewriteEngine On
+
+# Condições para evitar o loop:
+# 1. Não reescreve se a URL já aponta para o index.fcgi
+RewriteCond %{REQUEST_URI} !^/index\.fcgi
+# 2. Não reescreve se a URL aponta para um arquivo que existe
 RewriteCond %{REQUEST_FILENAME} !-f
+# 3. Não reescreve se a URL aponta para um diretório que existe
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Regra final: reescreve todo o resto para o index.fcgi
 RewriteRule ^(.*)$ index.fcgi/$1 [QSA,L]
