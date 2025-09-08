@@ -1,0 +1,162 @@
+============================================================
+PLANO DE AÇÃO: CONECTAR FLASK COM MYSQL NA HOSTGATOR
+============================================================
+Data: 07/09/2025
+Projeto: Blog de Notícias (blogpy.ctdol.com.br)
+
+OBJETIVO: Substituir a lista de posts em memória por um banco de dados MySQL real no servidor, tornando o blog 100% funcional.
+
+---
+### FASE 1: PREPARAÇÃO DO CÓDIGO (No seu computador, com VS Code)
+---
+
+1.  **Atualizar o `requirements.txt`:**
+    * Verifique se o arquivo `requirements.txt` local contém a biblioteca para conectar com MySQL. A versão `mysqlclient==1.4.6` é compatível com SQLAlchemy 1.3 e Python 3.6.
+    * O arquivo final deve ser este:
+        ```
+        Flask==1.1.4
+        Flask-SQLAlchemy==2.5.1
+        SQLAlchemy==1.3.24
+        Jinja2==2.11.3
+        Werkzeug==1.0.1
+        itsdangerous==1.1.0
+        click==7.1.2
+        python-dotenv==0.20.0
+        greenlet==1.1.3
+        blinker==1.5
+        mysqlclient==1.4.6
+        ```
+
+2.  **Atualizar o `app.py` para usar o Banco de Dados:**
+    * Importe `SQLAlchemy`.
+    * Configure a URI de conexão (usaremos placeholders por enquanto).
+    * Crie o "Model" da sua tabela de posts.
+    * Modifique as rotas para ler e escrever no banco de dados em vez da lista `posts`.
+    * (Opcional, mas recomendado) Crie um comando de terminal para iniciar o banco de dados.
+
+    * **Exemplo de código para `app.py`:**
+        ```python
+        import os
+        from flask import Flask, render_template, request, redirect, url_for
+        from flask_sqlalchemy import SQLAlchemy
+
+        app = Flask(__name__)
+
+        # --- CONFIGURAÇÃO DO BANCO DE DADOS ---
+        # Usaremos variáveis de ambiente ou placeholders por enquanto
+        DB_USER = 'SEU_USUARIO_DB'
+        DB_PASS = 'SUA_SENHA_DB'
+        DB_HOST = 'localhost'
+        DB_NAME = 'SEU_NOME_DB'
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}'
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+        db = SQLAlchemy(app)
+
+        # --- MODELO DA TABELA DE POSTS ---
+        class Post(db.Model):
+            id = db.Column(db.Integer, primary_key=True)
+            title = db.Column(db.String(100), nullable=False)
+            content = db.Column(db.Text, nullable=False)
+
+        # --- COMANDO PARA CRIAR A TABELA NO SERVIDOR ---
+        @app.cli.command("init-db")
+        def init_db_command():
+            """Cria as tabelas do banco de dados."""
+            db.create_all()
+            print("Banco de dados inicializado e tabela 'post' criada.")
+
+        # --- ROTAS MODIFICADAS ---
+        @app.route('/')
+        def index():
+            # Busca todos os posts do banco de dados
+            all_posts = Post.query.order_by(Post.id.desc()).all()
+            return render_template('index.html', posts=all_posts)
+            
+        @app.route('/admin')
+        def admin():
+            all_posts = Post.query.order_by(Post.id.desc()).all()
+            return render_template('admin.html', posts=all_posts)
+
+        @app.route('/add', methods=['POST'])
+        def add_post():
+            # Adiciona um novo post no banco de dados
+            title = request.form['title']
+            content = request.form['content']
+            new_post = Post(title=title, content=content)
+            db.session.add(new_post)
+            db.session.commit()
+            return redirect(url_for('admin'))
+
+        @app.route('/delete/<int:post_id>')
+        def delete_post(post_id):
+            # Deleta um post do banco de dados pelo seu ID
+            post_to_delete = Post.query.get_or_404(post_id)
+            db.session.delete(post_to_delete)
+            db.session.commit()
+            return redirect(url_for('admin'))
+        ```
+
+3.  **Enviar as Alterações para o GitHub:**
+    * `git add .`
+    * `git commit -m "Implementa integração com SQLAlchemy"`
+    * `git push origin main`
+
+---
+### FASE 2: CONFIGURAÇÃO DO BANCO DE DADOS NA HOSTGATOR
+---
+
+1.  **Acessar o cPanel da HostGator.**
+
+2.  **Ir para "Assistente de banco de dados MySQL®".**
+
+3.  **Passo 1: Criar Banco de Dados.**
+    * Nome: `blogdb` (ou similar).
+    * Anotar o nome completo gerado (ex: `ctdolc07_blogdb`).
+
+4.  **Passo 2: Criar Usuário do Banco de Dados.**
+    * Nome de usuário: `bloguser` (ou similar).
+    * Gerar e salvar uma senha forte.
+    * Anotar o nome de usuário completo (ex: `ctdolc07_bloguser`).
+
+5.  **Passo 3: Conceder Privilégios.**
+    * Adicionar o usuário ao banco de dados.
+    * Marcar a caixa "TODOS OS PRIVILÉGIOS".
+    * Salvar as alterações.
+
+---
+### FASE 3: IMPLANTAÇÃO FINAL NA HOSTGATOR
+---
+
+1.  **Acessar o Terminal do cPanel.**
+
+2.  **Navegar para a pasta do projeto:**
+    * `cd blogpy.ctdol.com.br`
+
+3.  **Puxar as atualizações do GitHub:**
+    * `git pull origin main`
+
+4.  **Atualizar as dependências (com `mysqlclient`):**
+    * `~/.local/bin/pip install -r requirements.txt`
+
+5.  **Editar o `app.py` no servidor:**
+    * Usar o "Gerenciador de Arquivos" do cPanel para editar o `app.py`.
+    * Preencher as variáveis `DB_USER`, `DB_PASS`, e `DB_NAME` com os dados reais que você anotou na Fase 2.
+
+6.  **Criar as Tabelas no Banco de Dados:**
+    * No terminal, execute o comando que criamos na Fase 1:
+        ```bash
+        # O 'flask' aqui precisa do caminho completo
+        ~/.local/bin/flask init-db
+        ```
+    * Você deve ver a mensagem "Banco de dados inicializado...".
+
+7.  **Reiniciar a Aplicação:**
+    * `touch tmp/restart.txt`
+
+8.  **TESTAR TUDO!**
+    * Acessar `http://blogpy.ctdol.com.br/admin` e tentar adicionar e remover posts. Eles agora devem ser permanentes.
+
+============================================================
+FIM DO PLANO
+============================================================
