@@ -1,6 +1,10 @@
 import os
+import pymysql
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+
+# Adiciona o suporte ao PyMySQL
+pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
 
@@ -10,7 +14,7 @@ DB_USER = 'SEU_USUARIO_DB'
 DB_PASS = 'SUA_SENHA_DB'
 DB_HOST = 'localhost'
 DB_NAME = 'SEU_NOME_DB'
-app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
