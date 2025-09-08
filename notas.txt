@@ -1,0 +1,52 @@
+O Problema: Política de Execução de Scripts
+O erro "a execução de scripts foi desabilitada neste sistema" significa exatamente isso: por padrão, o PowerShell no seu computador está configurado para não executar scripts locais (como o Activate.ps1 do seu ambiente virtual) para te proteger de scripts maliciosos.
+
+Você precisa dizer ao PowerShell que você confia nos scripts que executa no seu próprio computador. Para isso, você vai alterar a "Política de Execução" (Execution Policy).
+
+A Solução Definitiva
+Você precisa executar um único comando no PowerShell, mas é crucial que você o execute como Administrador.
+
+Passo 1: Abrir o PowerShell como Administrador
+
+Clique no menu Iniciar do Windows.
+
+Digite PowerShell.
+
+Nos resultados da busca, clique com o botão direito do mouse em "Windows PowerShell".
+
+Selecione a opção "Executar como administrador".
+
+Uma janela de confirmação do Windows pode aparecer. Clique em "Sim".
+
+Passo 2: Alterar a Política de Execução
+
+Na janela do PowerShell (que deve indicar "Administrador" na barra de título), digite o seguinte comando e pressione Enter:
+
+PowerShell
+
+Set-ExecutionPolicy RemoteSigned
+O PowerShell vai te perguntar se você tem certeza. Ele mostrará uma mensagem como:
+A política de execução ajuda a proteger contra scripts não confiáveis. Se você alterar a política de execução, poderá ser exposto aos riscos de segurança... Deseja alterar a política de execução?
+[S] Sim [A] Sim para Todos [N] Não [L] Não para Todos [A] Suspender [?] Ajuda (o padrão é "N"):
+
+Digite S (para "Sim") e pressione Enter.
+
+O que esse comando faz? A política RemoteSigned é a mais recomendada para desenvolvedores. Ela significa que:
+
+Scripts criados no seu próprio computador (como o Activate.ps1) podem ser executados.
+
+Scripts baixados da internet só podem ser executados se tiverem uma assinatura digital de um editor confiável.
+
+Passo 3: Teste a Solução
+Feche a janela do PowerShell de Administrador.
+
+Abra um novo terminal normal no VS Code ou onde você preferir (não precisa mais ser como administrador).
+
+Navegue até a pasta do seu projeto e tente ativar o ambiente virtual novamente:
+
+PowerShell
+
+.\venv\Scripts\activate
+Agora o comando deve funcionar perfeitamente, e você verá o (venv) aparecer no início da linha do seu terminal.
+
+Esta é uma configuração única. Uma vez alterada, você não precisará fazer isso de novo e poderá ativar qualquer ambiente virtual em seus projetos futuros sem problemas.

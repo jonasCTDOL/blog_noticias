@@ -1,0 +1,69 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Notícias</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; background-color: #f4f4f9; color: #333; margin: 0; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        header { background-color: #d9534f; color: #fff; padding: 1.5rem 0; text-align: center; margin-bottom: 2rem; }
+        header h1 { margin: 0; }
+        .admin-section { background-color: #fff; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #f4f4f9; padding-bottom: 0.5rem; }
+        form label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        form input, form textarea { width: 100%; padding: 0.5rem; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        form button { background-color: #5cb85c; color: white; padding: 0.7rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        form button:hover { background-color: #4cae4c; }
+        .post-list-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+        .post-list-item p { margin: 0; }
+        .delete-btn { background-color: #d9534f; color: white; text-decoration: none; padding: 0.3rem 0.8rem; border-radius: 4px; }
+        .delete-btn:hover { background-color: #c9302c; }
+        .nav-link { text-align: center; margin-top: 2rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Painel de Administração</h1>
+    </header>
+
+    <main class="container">
+
+        <section class="admin-section">
+            <h2>Adicionar Nova Notícia</h2>
+            <form action="{{ url_for('add_post') }}" method="POST">
+                <label for="title">Título:</label>
+                <input type="text" id="title" name="title" required>
+
+                <label for="content">Conteúdo:</label>
+                <textarea id="content" name="content" rows="5" required></textarea>
+
+                <button type="submit">Publicar Notícia</button>
+            </form>
+        </section>
+
+        <section class="admin-section">
+            <h2>Notícias Publicadas</h2>
+            <div class="post-list">
+                {% for post in posts %}
+                    <div class="post-list-item">
+                        <p>{{ post.title }}</p>
+                        <a href="{{ url_for('delete_post', post_id=loop.index0) }}" class="delete-btn">Excluir</a>
+                    </div>
+                {% else %}
+                    <p>Nenhuma notícia publicada.</p>
+                {% endfor %}
+            </div>
+        </section>
+        
+        <div class="nav-link">
+            <a href="{{ url_for('index') }}">← Voltar para a Página Inicial</a>
+        </div>
+
+    </main>
+
+</body>
+</html>
+```
